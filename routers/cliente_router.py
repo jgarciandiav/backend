@@ -1,10 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.orm import Session
 from database import get_db
 from schemas import ClienteCreate, ClienteOut
 from crud import cliente_crud
 
 router = APIRouter()
+
+# routers/cliente_router.py
+@router.get("/buscar", response_model=ClienteOut)
+def buscar_cliente(nombre: str = Query(...), db: Session = Depends(get_db)):
+    print("🔎 Backend recibió:", repr(nombre))
+    cliente = cliente_crud.get_by_name(db, nombre)
+    print("✅ Encontrado:", cliente)
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    return cliente
 
 @router.post("/", response_model=ClienteOut)
 def create_cliente(cliente: ClienteCreate, db: Session = Depends(get_db)):
@@ -32,3 +42,4 @@ def update_cliente(cliente_id: int, payload: ClienteCreate, db: Session = Depend
 def delete_cliente(cliente_id: int, db: Session = Depends(get_db)):
     cliente_crud.delete(db, cliente_id)
     return {"ok": True}
+
