@@ -5,6 +5,7 @@ from routers import (
     servicio_router,
     cliente_router,
     factura_router,
+    facturaitems_router,
     )
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -24,3 +25,4 @@ app.include_router(user_router.router, prefix="/users", tags=["Users"])
 app.include_router(servicio_router.router, prefix="/servicios", tags=["Servicios"])
 app.include_router(cliente_router.router, prefix="/clientes", tags=["Clientes"])
 app.include_router(factura_router.router, prefix="/facturas", tags=["Facturas"])
+app.include_router(facturaitems_router.router, prefix="/facturaitems", tags=["FacturaItems"])
