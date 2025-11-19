@@ -57,15 +57,38 @@ def get_factura(db: Session, nofactura: str):
     return db.query(Factura).filter(Factura.nofactura == nofactura).first()
 
 def update_factura(db: Session, nofactura: str, factura: FacturaCreate):
-    db_factura = get_factura(db, nofactura)
-    if not db_factura:
-        return None
-    for key, value in factura.dict(exclude={"items"}).items():
-        setattr(db_factura, key, value)
-    db.commit()
-    db.refresh(db_factura)
-    return db_factura
+    # 1. Actualiza cabecera (maestro)
+    db.query(Factura).filter(Factura.nofactura == nofactura).update(
+        {
+            "fecha": factura.fecha,
+            "customer": factura.customer,
+            "address": factura.address,
+            "cobrado": factura.cobrado,
+            "total": sum(item.importe for item in factura.items),
+        }
+    )
 
+    # 2. Borra items antiguos (detalle)
+    db.query(FacturaItems).filter(FacturaItems.nofactura == nofactura).delete()
+
+    # 3. Inserta items nuevos (detalle)
+    for item in factura.items:
+        servicio = db.query(Servicio).filter(Servicio.service == item.service).first()
+        if not servicio:
+            servicio = Servicio(service=item.service)
+            db.add(servicio)
+            db.commit()
+            db.refresh(servicio)
+
+        db_item = FacturaItems(
+            nofactura=nofactura,
+            service=item.service,
+            importe=item.importe
+        )
+        db.add(db_item)
+
+    db.commit()
+    return get_factura(db, nofactura)
 def delete_factura(db: Session, nofactura: str):
     db.query(FacturaItems).filter(FacturaItems.nofactura == nofactura).delete()
     db.query(Factura).filter(Factura.nofactura == nofactura).delete()
