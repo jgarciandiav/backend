@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Factura
@@ -35,9 +35,19 @@ def resumen_general(db: Session = Depends(get_db)):
 def create_factura(factura: FacturaCreate, db: Session = Depends(get_db)):
     return factura_crud.create_factura(db, factura)
 
+#@router.get("/", response_model=list[FacturaOut])
+#def list_facturas(cobrado: bool = None, customer: str = None, db: Session = Depends(get_db)):
+#    return factura_crud.list_facturas(db, cobrado, customer)
+
 @router.get("/", response_model=list[FacturaOut])
-def list_facturas(cobrado: bool = None, customer: str = None, db: Session = Depends(get_db)):
-    return factura_crud.list_facturas(db, cobrado, customer)
+def list_facturas(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    offset = (page - 1) * per_page
+    facturas = db.query(Factura).offset(offset).limit(per_page).all()
+    return facturas
 
 @router.get("/{nofactura}", response_model=FacturaOut)
 def get_factura(nofactura: str, db: Session = Depends(get_db)):

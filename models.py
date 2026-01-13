@@ -37,3 +37,12 @@ class FacturaItems(Base):
     nofactura = Column(String, ForeignKey("facturas.nofactura"))
     service = Column(String)
     importe = Column(Float)
+
+class ConfigEmpresa(Base):
+    __tablename__ = "configempresa"
+    id = Column(Integer, primary_key=True, index=True)
+    nombre_empresa = Column(String)
+    cif = Column(String)
+    telefono = Column(String)
+    email = Column(String)
+    cp = Column(String)

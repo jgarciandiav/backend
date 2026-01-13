@@ -79,3 +79,19 @@ class UserLoginResponse(BaseModel):
     email: str
 
     model_config = ConfigDict(from_attributes=True)
+
+class ConfigEmpresaCreate(BaseModel):
+    nombre_empresa: str
+    cif: str
+    telefono: str
+    email: str
+    cp: str
+
+class ConfigEmpresaOut(BaseModel):
+    id: int
+    nombre_empresa: str
+    cif: str
+    telefono: str
+    email: str
+    cp: str
+    model_config = ConfigDict(from_attributes=True)
