@@ -36,6 +36,7 @@ class FacturaItems(Base):
     id = Column(Integer, primary_key=True, index=True)
     nofactura = Column(String, ForeignKey("facturas.nofactura"))
     service = Column(String)
+    servicetranslate = Column(String)
     importe = Column(Float)
 
 class ConfigEmpresa(Base):

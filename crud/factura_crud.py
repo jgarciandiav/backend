@@ -38,6 +38,7 @@ def create_factura(db: Session, factura: FacturaCreate):
         db_item = FacturaItems(
             nofactura=factura.nofactura,
             service=item.service,
+            servicetranslate=item.servicetranslate,
             importe=item.importe
         )
         db.add(db_item)
@@ -83,6 +84,7 @@ def update_factura(db: Session, nofactura: str, factura: FacturaCreate):
         db_item = FacturaItems(
             nofactura=nofactura,
             service=item.service,
+            servicetranslate=item.servicetranslate,
             importe=item.importe
         )
         db.add(db_item)

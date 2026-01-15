@@ -41,6 +41,7 @@ class ClienteOut(BaseModel):
 
 class FacturaItemCreate(BaseModel):
     service: str
+    servicetranslate: Optional[str] = None
     importe: float
 
 class FacturaCreate(BaseModel):
@@ -82,6 +83,7 @@ class FacturaItemOut(BaseModel):
     id: int
     nofactura: str
     service: str
+    servicetranslate: Optional[str] = None
     importe: float
     model_config = ConfigDict(from_attributes=True)
 
