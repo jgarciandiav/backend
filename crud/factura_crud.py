@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from models import Factura, FacturaItems, Cliente, Servicio
 from schemas import FacturaCreate
-from sqlalchemy import func
+from sqlalchemy import func, case
 
 def create_factura(db: Session, factura: FacturaCreate):
     # Validar o crear cliente
@@ -104,3 +104,30 @@ def resumen(db: Session):
 def servicios_usados(db: Session):
     from sqlalchemy import distinct
     return db.query(distinct(FacturaItems.service)).all()
+
+def resumen_por_cliente(db: Session, fecha_inicio=None, fecha_fin=None):
+    query = db.query(
+        Factura.customer,
+        func.sum(case((Factura.cobrado == True, Factura.total), else_=0)).label('suma_pagadas'),
+        func.sum(case((Factura.cobrado == False, Factura.total), else_=0)).label('suma_pendientes'),
+        func.sum(Factura.total).label('total'),
+        func.count(Factura.id).label('cantidad_facturas')
+    ).group_by(Factura.customer)
+    
+    if fecha_inicio:
+        query = query.filter(Factura.fecha >= fecha_inicio)
+    if fecha_fin:
+        query = query.filter(Factura.fecha <= fecha_fin)
+    
+    resultados = query.all()
+    
+    return [
+        {
+            "customer": r.customer,
+            "suma_pagadas": float(r.suma_pagadas or 0),
+            "suma_pendientes": float(r.suma_pendientes or 0),
+            "total": float(r.total or 0),
+            "cantidad_facturas": r.cantidad_facturas or 0
+        }
+        for r in resultados
+    ]

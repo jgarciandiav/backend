@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Factura
-from schemas import FacturaCreate, FacturaOut
+from schemas import FacturaCreate, FacturaOut, ResumenClienteOut
 from crud import factura_crud
 from auth.auth_bearer import get_current_user
 from models import FacturaItems
+from datetime import date, datetime
 
 router = APIRouter()
 
@@ -101,3 +102,29 @@ def resumen(db: Session = Depends(get_db)):
 @router.get("/servicios/usados")
 def servicios_usados(db: Session = Depends(get_db)):
     return factura_crud.servicios_usados(db)
+
+@router.get("/resumen/clientes", response_model=list[ResumenClienteOut])
+def resumen_clientes(
+    fecha_inicio: str = Query(None, description="Fecha de inicio del rango (DD/MM/YYYY)"),
+    fecha_fin: str = Query(None, description="Fecha de fin del rango (DD/MM/YYYY)"),
+    db: Session = Depends(get_db)
+):
+    try:
+        fecha_inicio_parsed = None
+        fecha_fin_parsed = None
+        
+        if fecha_inicio:
+            try:
+                fecha_inicio_parsed = datetime.strptime(fecha_inicio, '%d/%m/%Y').date()
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Formato de fecha_inicio inválido. Usa DD/MM/YYYY")
+        
+        if fecha_fin:
+            try:
+                fecha_fin_parsed = datetime.strptime(fecha_fin, '%d/%m/%Y').date()
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Formato de fecha_fin inválido. Usa DD/MM/YYYY")
+        
+        return factura_crud.resumen_por_cliente(db, fecha_inicio_parsed, fecha_fin_parsed)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
