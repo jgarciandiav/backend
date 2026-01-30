@@ -9,8 +9,6 @@ def create_factura(db: Session, factura: FacturaCreate):
     if not cliente:
         cliente = Cliente(name=factura.customer, address=factura.address)
         db.add(cliente)
-        db.commit()
-        db.refresh(cliente)
 
     # Crear factura
     total = sum(item.importe for item in factura.items)
@@ -23,8 +21,6 @@ def create_factura(db: Session, factura: FacturaCreate):
         cobrado=factura.cobrado
     )
     db.add(db_factura)
-    db.commit()
-    db.refresh(db_factura)
 
     # Crear items
     for item in factura.items:
@@ -32,8 +28,6 @@ def create_factura(db: Session, factura: FacturaCreate):
         if not servicio:
             servicio = Servicio(service=item.service)
             db.add(servicio)
-            db.commit()
-            db.refresh(servicio)
 
         db_item = FacturaItems(
             nofactura=factura.nofactura,
@@ -44,6 +38,7 @@ def create_factura(db: Session, factura: FacturaCreate):
         db.add(db_item)
 
     db.commit()
+    db.refresh(db_factura)
     return db_factura
 
 def list_facturas(db: Session, cobrado: bool = None, customer: str = None):
@@ -78,8 +73,6 @@ def update_factura(db: Session, nofactura: str, factura: FacturaCreate):
         if not servicio:
             servicio = Servicio(service=item.service)
             db.add(servicio)
-            db.commit()
-            db.refresh(servicio)
 
         db_item = FacturaItems(
             nofactura=nofactura,
@@ -91,6 +84,7 @@ def update_factura(db: Session, nofactura: str, factura: FacturaCreate):
 
     db.commit()
     return get_factura(db, nofactura)
+
 def delete_factura(db: Session, nofactura: str):
     db.query(FacturaItems).filter(FacturaItems.nofactura == nofactura).delete()
     db.query(Factura).filter(Factura.nofactura == nofactura).delete()

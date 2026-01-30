@@ -1,16 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException,Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Factura
+from models import Factura, FacturaItems
 from schemas import FacturaCreate, FacturaOut, ResumenClienteOut
 from crud import factura_crud
 from auth.auth_bearer import get_current_user
-from models import FacturaItems
 from datetime import date, datetime
 
 router = APIRouter()
-
-
 
 @router.get("/resumen")
 def resumen_general(db: Session = Depends(get_db)):
@@ -36,10 +33,6 @@ def resumen_general(db: Session = Depends(get_db)):
 def create_factura(factura: FacturaCreate, db: Session = Depends(get_db)):
     return factura_crud.create_factura(db, factura)
 
-#@router.get("/", response_model=list[FacturaOut])
-#def list_facturas(cobrado: bool = None, customer: str = None, db: Session = Depends(get_db)):
-#    return factura_crud.list_facturas(db, cobrado, customer)
-
 @router.get("/", response_model=list[FacturaOut])
 def list_facturas(
     page: int = Query(1, ge=1),
@@ -60,36 +53,7 @@ def update_factura(
     payload: FacturaCreate,
     db: Session = Depends(get_db)
 ):
-    try:
-        # 1. Actualiza cabecera
-        db.query(Factura).filter(Factura.nofactura == nofactura).update(
-            {
-                "fecha": payload.fecha,
-                "customer": payload.customer,
-                "address": payload.address,
-                "cobrado": payload.cobrado,
-                "total": sum(item.importe for item in payload.items),
-            }
-        )
-
-        # 2. Borra items antiguos
-        db.query(FacturaItems).filter(FacturaItems.nofactura == nofactura).delete()
-
-        # 3. Inserta items nuevos
-        for item in payload.items:
-            db_item = FacturaItems(
-                nofactura=payload.nofactura,
-                service=item.service,
-                importe=item.importe
-            )
-            db.add(db_item)
-
-        db.commit()
-        return db.query(Factura).filter(Factura.nofactura == nofactura).first()
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+    return factura_crud.update_factura(db, nofactura, payload)
 
 @router.delete("/{nofactura}")
 def delete_factura(nofactura: str, db: Session = Depends(get_db)):
