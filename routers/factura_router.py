@@ -6,20 +6,23 @@ from schemas import FacturaCreate, FacturaOut, ResumenClienteOut
 from crud import factura_crud
 from auth.auth_bearer import get_current_user
 from datetime import date, datetime
+from sqlalchemy import func, case
 
 router = APIRouter()
 
 @router.get("/resumen")
 def resumen_general(db: Session = Depends(get_db)):
     try:
-        total = db.query(Factura).count()
-        cobradas = db.query(Factura).filter(Factura.cobrado == True).count()
-        sin_cobrar = db.query(Factura).filter(Factura.cobrado == False).count()
+        res = db.query(
+            func.count(Factura.id).label("total"),
+            func.count(case((Factura.cobrado == True, 1))).label("cobradas"),
+            func.count(case((Factura.cobrado == False, 1))).label("sin_cobrar")
+        ).first()
 
         resultado = {
-            "total": total,
-            "cobradas": cobradas,
-            "sin_cobrar": sin_cobrar
+            "total": res.total or 0,
+            "cobradas": res.cobradas or 0,
+            "sin_cobrar": res.sin_cobrar or 0
         }
 
         print("🔎 Resultado:", resultado)  

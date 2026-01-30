@@ -6,6 +6,8 @@ def create_config_empresa(db: Session, config: ConfigEmpresaCreate):
     db_config = ConfigEmpresa(
         nombre_empresa=config.nombre_empresa,
         cif=config.cif,
+        address1=config.address1,
+        address2=config.address2,
         telefono=config.telefono,
         email=config.email,
         cp=config.cp
@@ -25,6 +27,8 @@ def update_config_empresa(db: Session, id: int, config: ConfigEmpresaCreate):
     db.query(ConfigEmpresa).filter(ConfigEmpresa.id == id).update({
         "nombre_empresa": config.nombre_empresa,
         "cif": config.cif,
+        "address1": config.address1,
+        "address2": config.address2,
         "telefono": config.telefono,
         "email": config.email,
         "cp": config.cp

@@ -102,6 +102,8 @@ class UserLoginResponse(BaseModel):
 class ConfigEmpresaCreate(BaseModel):
     nombre_empresa: str
     cif: str
+    address1: str
+    address2: Optional[str] = None
     telefono: str
     email: str
     cp: str
@@ -110,6 +112,8 @@ class ConfigEmpresaOut(BaseModel):
     id: int
     nombre_empresa: str
     cif: str
+    address1: str
+    address2: Optional[str] = None
     telefono: str
     email: str
     cp: str

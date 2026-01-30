@@ -44,6 +44,8 @@ class ConfigEmpresa(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre_empresa = Column(String)
     cif = Column(String)
+    address1 = Column(String)
+    address2 = Column(String)
     telefono = Column(String)
     email = Column(String)
     cp = Column(String)
